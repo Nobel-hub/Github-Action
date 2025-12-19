@@ -13,28 +13,36 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      # 1. Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      # 2. Setup Java 11
       - name: Set up JDK 11
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
 
-      # Ensure gradlew can run
+      # 3. Make gradlew executable
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
 
+      # 4. Setup Gradle
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      # 5. Build project
       - name: Build with Gradle Wrapper
         run: ./gradlew build
 
+      # 6. Build and push Docker image
       - name: Build and Push Docker image
+        if: github.event_name == 'push'       # Only on push, avoids PR errors
         uses: mr-smithers-excellent/docker-build-push@v4
         with:
           image: nobeldhakal123/nobeldhakal
           registry: docker.io
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+          tag: latest                        # Avoids 'undefined' tag
