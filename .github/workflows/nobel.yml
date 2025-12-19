@@ -8,10 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{matrix.os}}
-    strategy:
-      matrix: 
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+    runs-on: ubuntu-latest
     permissions:
       contents: read
 
@@ -24,10 +21,20 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
 
+      # Ensure gradlew can run
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build with Gradle Wrapper
         run: ./gradlew build
-  
-  
+
+      - name: Build and Push Docker image
+        uses: mr-smithers-excellent/docker-build-push@v4
+        with:
+          image: nobeldhakal123/nobeldhakal
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
